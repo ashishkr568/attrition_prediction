@@ -16,7 +16,7 @@ Once done the user can run the run the code and get the prediction for Employee 
 ## Folder Structure
 There are 4 folders in this project and below are their decription:
 
-### codes
+#### codes
 This folder has the codes to perform the following tasks:
 
 - Preprocess Data (hr_attrition_preprocess.py) - This code performs the following tasks:
@@ -33,10 +33,10 @@ This folder has the codes to perform the following tasks:
 - Build a xgboost model on the preprocessed data (hr_attrition_xgb.py)
 - Build a SVM model on the preprocessed data (hr_attrition_svm.py)
     
-### input
+#### input
 This folder contains the input/raw file used for this project.
 
-### functions
+#### functions
 This folder contains functions used for plotting and preprocessing the data. Below are the functions included in it:
 
 - **Preprocessing function (ak_generic_fun.py)**
@@ -51,12 +51,12 @@ This folder contains functions used for plotting and preprocessing the data. Bel
     - Plot ROC_AUC curve
     - Plot confusion matrix with labels
 
-### output
+#### output
 This folder will store all the generated outputs
     
 **Note-** These files are created using python 3.7 in Spyder.
 
-### Version
+## Version
 
 Initial version (v0)
 
