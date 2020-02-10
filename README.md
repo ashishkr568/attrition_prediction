@@ -66,9 +66,11 @@ As the accuracy improves or a new algorithm is tried, I will be updating the ver
 ## Author
 **Ashish Kumar**
 
-[![LinkedIn][1]][2]         [![GitHub][3]][4]
+[![LinkedIn][1]][2]         [![GitHub][3]][4]      [![Medium][5]][6]
 
 [1]:  Linkedin.png
 [2]:  https://www.linkedin.com/in/ashish568/
 [3]:  Github.png
 [4]:  https://github.com/ashishkr568
+[5]:  medium.png
+[6]:  https://medium.com/@ashish.568
