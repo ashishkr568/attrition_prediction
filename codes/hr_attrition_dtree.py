@@ -2,7 +2,7 @@
 """
 Created on Mon Dec 30 13:51:42 2019
 
-@author: ashish_kumar2
+@author: ashishkr568
 """
 
 # This code is for building a decision tree classifier on the HR Attrition dataset
@@ -11,7 +11,7 @@ Created on Mon Dec 30 13:51:42 2019
 import sys
 import os
 import pandas as pd
-#import numpy as np
+import numpy as np
 #import feather
 #import pickle
 #from sklearn.preprocessing import LabelEncoder
@@ -21,9 +21,10 @@ from sklearn.metrics import confusion_matrix
 #from sklearn.metrics import recall_score, accuracy_score, f1_score
 from sklearn.metrics import classification_report
 #from sklearn.metrics import roc_auc_score, roc_curve, auc
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score
 from sklearn.metrics import make_scorer
 from sklearn.tree import DecisionTreeClassifier
+import datetime
 
 # Import custom functions
 sys.path.insert(0, './functions/')
@@ -34,10 +35,10 @@ from ak_plotting_fun import roc_auc_curve_plot, label_and_plot_confusion_matrix
 
 model_name='Decision_Tree'
 
-inp_data_loc=r"D:\Test_Projects\HR_Attrition\output"
+inp_data_loc=r"./input/"
 
 # Define input and output data location
-out_data_loc= r"D:\Test_Projects\HR_Attrition\output"+'/'+ model_name
+out_data_loc= r"./output"+'/'+ model_name
 
 
 # Create a folder to store RF model data
@@ -46,7 +47,7 @@ if not os.path.exists(out_data_loc):
 
 
 # Read Training and validation set data
-model_dict=joblib.load(inp_data_loc+'/'+'model_dict')
+model_dict=joblib.load('./output'+'/'+'model_dict')
 
 x_train=model_dict['x_train']
 y_train=model_dict['y_train']
@@ -59,42 +60,23 @@ y_valid=model_dict['y_valid']
 #-------------------Hyperparameter tuning using GridSearchCV------------------#
 # Create parameters for gridsearchcv
 grid_param_dtree={'criterion':['gini','entropy'],
-                  'splitter':['best','random'],
-                  'max_depth':[10,None],
+                  'splitter':['best'],
+                  'max_depth':[6,10,None],
                   'min_samples_split':[2,5,10,25],
                   'min_samples_leaf':[2,4,6],
-                  'max_features':[3,None],
-                  'max_leaf_nodes':[3,None],
                   'random_state':[0]}
 
 
-#grid_param_rf={'n_estimators':[10,20,],
-#               'min_samples_leaf':[1],
-#               'max_features':[1],
-#               'bootstrap':[True,False]}
+## Create a custom scoring function. 
+## We will be using recall for the positive class.
+#def custom_recall_fun(y,y_pred):
+#    confusion_mat_temp=confusion_matrix(y,y_pred, labels=[1,0]).T
+#    recall_positive=confusion_mat_temp[0,0]/(confusion_mat_temp[0,0]+confusion_mat_temp[1,0])
+#    return recall_positive
+#
+## Use make scorer from sklearn.metrices to create a scoring function
+#custom_scorer = make_scorer(score_func=custom_recall_fun, greater_is_better=True)
 
-# Create a custom scoring function. 
-# We will be using recall for the positive class.
-def custom_recall_fun(y,y_pred):
-    confusion_mat_temp=confusion_matrix(y,y_pred, labels=[1,0]).T
-    recall_positive=confusion_mat_temp[0,0]/(confusion_mat_temp[0,0]+confusion_mat_temp[1,0])
-    return recall_positive
-
-# Use make scorer from sklearn.metrices to create a scoring function
-custom_scorer = make_scorer(score_func=custom_recall_fun, greater_is_better=True)
-
-
-# Calculate the total number of runs
-tot_runs_grid_search_dtree= (len(grid_param_dtree['criterion'])
-                          * len(grid_param_dtree['splitter'])
-                          * len(grid_param_dtree['max_depth'])
-                          * len(grid_param_dtree['min_samples_split'])
-                          * len(grid_param_dtree['min_samples_leaf'])
-                          * len(grid_param_dtree['max_features'])
-                          * len(grid_param_dtree['max_leaf_nodes'])
-                          * len(grid_param_dtree['random_state']))
-
-print("Total Runs for Grid Search is - "+str(tot_runs_grid_search_dtree))
 
 # Build a dummy classifier
 dtree_classifier=DecisionTreeClassifier()
@@ -103,11 +85,16 @@ dtree_classifier=DecisionTreeClassifier()
 # We need to provide the desired scoring criteria and cv
 dtree_grid_search=GridSearchCV(estimator=dtree_classifier,
                             param_grid=grid_param_dtree,
-                            scoring=custom_scorer,
-                            cv=10)
+                            scoring='precision',
+                            return_train_score=True,
+                            cv=StratifiedKFold(n_splits=10))
 
 # Fit the above defined model with the training set, to get the best parameters 
 dtree_grid_search.fit(x_train,y_train)
+
+# Save gridsearch results for future reference
+cv_results=pd.DataFrame.from_dict(dtree_grid_search.cv_results_,orient='columns')
+
 
 # Get the best parameters and save it in a file
 grid_cv_params_dtree=dtree_grid_search.best_params_
@@ -121,17 +108,18 @@ grid_cv_params_dtree.to_csv(out_data_loc+'/'+"D_Tree_Grid_serch_Params.csv", ind
 grid_cv_params_dtree=pd.read_csv(out_data_loc+"/"+"D_Tree_Grid_serch_Params.csv")
 grid_cv_params_dtree = grid_cv_params_dtree.where((pd.notnull(grid_cv_params_dtree)), None)
 
-
 # Build a Decision tree classifier
 dtree_classifier= DecisionTreeClassifier(criterion = grid_cv_params_dtree.criterion[0],
                                          splitter = grid_cv_params_dtree.splitter[0],
                                          max_depth = grid_cv_params_dtree.max_depth[0],
                                          min_samples_split = grid_cv_params_dtree.min_samples_split[0],
                                          min_samples_leaf=grid_cv_params_dtree.min_samples_leaf[0],
-                                         max_features=grid_cv_params_dtree.max_features[0],
-                                         max_leaf_nodes=grid_cv_params_dtree.max_leaf_nodes[0],
                                          random_state=0)
 
+
+# Get Cross validation accuracy on the training data
+scores = cross_val_score(dtree_classifier,x_train,y_train, cv=10)
+cross_validation_accuracy=np.mean(scores)
 
 
 # Train classifier
@@ -208,14 +196,14 @@ dtree_confusion_matrix_valid=label_and_plot_confusion_matrix(y_true=y_valid,
 # Get classification report which consist of Precision, Recall and F1-Score
 # in pandas dataframe, In case the result is not required in pandas dataframe
 # remove output_dict parameter (it will return a string)
-dtree_classification_repor_valid=classification_report(y_true=y_valid,
+dtree_classification_report_valid=classification_report(y_true=y_valid,
                                                     y_pred=y_valid_pred_dtree, 
                                                     digits=3,
                                                     output_dict=True)
 
 # Get classification report in pandas dataframe
-dtree_classification_repor_valid=pd.DataFrame(dtree_classification_repor_valid).transpose()
-dtree_classification_repor_valid=dtree_classification_repor_valid.round(3)
+dtree_classification_report_valid=pd.DataFrame(dtree_classification_report_valid).transpose()
+dtree_classification_report_valid=dtree_classification_report_valid.round(3)
 
 
 
@@ -239,9 +227,10 @@ import graphviz
 # Add Graphviz folder location to PATH
 os.environ["PATH"] += os.pathsep + r'C:\graphviz-2.38\release\bin'
 
+
 dot_data = tree.export_graphviz(attrition_dtree_model, out_file=None, 
-                                feature_names=x_train.columns,  
-                                class_names=y_train.unique().astype(str),  
+                                feature_names=x_train.columns.str.replace('&','_'),  
+                                class_names=np.sort(y_train.unique()).astype(str),  
                                 filled=True, rounded=True,  
                                 special_characters=True)  
 graph = graphviz.Source(dot_data)  
@@ -249,3 +238,140 @@ graph = graphviz.Source(dot_data)
 # Save plot. The plot is saved in pdf format
 graph.render(out_data_loc+'/'+'Attrition_Tree')
 
+
+# Prediction on Test Set
+
+# Read blind dataset
+blind_ds= pd.read_csv('./input/Attrition_Prediction_Blind_Set.csv')
+
+# Get Dependent variable
+dep_var_name="Attrition"
+
+# Read label encoder used on the training data to encode test data
+import pickle
+le_att=pickle.load(open('output/'+'Attrition_encoder.pkl','rb'))
+blind_ds.Attrition=le_att.transform(blind_ds.Attrition)
+
+# Create categorical columns (Same as that of Training Set)
+cat_col_list=model_dict['Category_Columns']
+blind_ds=pd.get_dummies(blind_ds, columns=cat_col_list)
+
+
+# Select only columns present in Training set
+x_test=blind_ds[x_train.columns]
+
+# Scale Test set with same weights as Training set
+std_scalar=joblib.load("./output/std_scalar")
+
+test_cols=x_test.columns
+x_test=std_scalar.transform(x_test)
+x_test=pd.DataFrame(x_test, columns=test_cols)
+
+
+# Select dependent variable to check accuracy
+y_test=blind_ds[dep_var_name]
+
+
+# Predict on Test set
+y_test_pred_dtree= attrition_dtree_model.predict(x_test)
+
+
+#------------------------Test set accuracy------------------------------#
+# Get Confuaion Matrix and plot it
+dtree_confusion_matrix_test=label_and_plot_confusion_matrix(y_true=y_test,
+                                                       y_pred=y_test_pred_dtree, 
+                                                       test_type="Test",
+                                                       model_name='D-Tree',
+                                                       out_loc=out_data_loc)
+
+
+# Get classification report which consist of Precision, Recall and F1-Score
+# in pandas dataframe, In case the result is not required in pandas dataframe
+# remove output_dict parameter (it will return a string)
+dtree_classification_report_test=classification_report(y_true=y_test,
+                                                    y_pred=y_test_pred_dtree, 
+                                                    digits=3,
+                                                    output_dict=True)
+
+# Get classification report in pandas dataframe
+dtree_classification_report_test=pd.DataFrame(dtree_classification_report_test).transpose()
+dtree_classification_report_test=dtree_classification_report_test.round(3)
+
+
+
+# roc_auc curve for Test set
+roc_auc_curve_plot(y_true= y_test,
+                   y_pred= y_test_pred_dtree,
+                   classifier=attrition_dtree_model,
+                   test_type='Test',
+                   model_name='D-Tree',
+                   x_true= x_test, 
+                   out_loc=out_data_loc)
+
+
+
+
+
+# Align data in output format
+d_time= datetime.datetime.now().strftime("%D %H:%M:%S")
+algorithm=model_name
+# Training Set Details
+train_set_accuracy=float(dtree_classification_report_train.loc[dtree_classification_report_train.index=='accuracy']['precision'])*100
+train_set_f1_yes=float(dtree_classification_report_train.loc[dtree_classification_report_train.index=='1']['f1-score'])*100
+train_set_f1_no=float(dtree_classification_report_train.loc[dtree_classification_report_train.index=='0']['f1-score'])*100
+train_set_precision_yes=float(dtree_classification_report_train.loc[dtree_classification_report_train.index=='1']['precision'])*100
+train_set_precision_no=float(dtree_classification_report_train.loc[dtree_classification_report_train.index=='0']['precision'])*100
+train_set_recall_yes=float(dtree_classification_report_train.loc[dtree_classification_report_train.index=='1']['recall'])*100
+train_set_recall_no=float(dtree_classification_report_train.loc[dtree_classification_report_train.index=='0']['recall'])*100
+
+# Cross Validation Accuracy
+cross_validation_accuracy=round(cross_validation_accuracy*100,3)
+
+# Validation Set Details
+valid_set_accuracy=float(dtree_classification_report_valid.loc[dtree_classification_report_valid.index=='accuracy']['precision'])*100
+valid_set_f1_yes=float(dtree_classification_report_valid.loc[dtree_classification_report_valid.index=='1']['f1-score'])*100
+valid_set_f1_no=float(dtree_classification_report_valid.loc[dtree_classification_report_valid.index=='0']['f1-score'])*100
+valid_set_precision_yes=float(dtree_classification_report_valid.loc[dtree_classification_report_valid.index=='1']['precision'])*100
+valid_set_precision_no=float(dtree_classification_report_valid.loc[dtree_classification_report_valid.index=='0']['precision'])*100
+valid_set_recall_yes=float(dtree_classification_report_valid.loc[dtree_classification_report_valid.index=='1']['recall'])*100
+valid_set_recall_no=float(dtree_classification_report_valid.loc[dtree_classification_report_valid.index=='0']['recall'])*100
+
+# Test Set Accuracy
+test_set_accuracy=float(dtree_classification_report_test.loc[dtree_classification_report_test.index=='accuracy']['precision'])*100
+test_set_f1_yes=float(dtree_classification_report_test.loc[dtree_classification_report_test.index=='1']['f1-score'])*100
+test_set_f1_no=float(dtree_classification_report_test.loc[dtree_classification_report_test.index=='0']['f1-score'])*100
+test_set_precision_yes=float(dtree_classification_report_test.loc[dtree_classification_report_test.index=='1']['precision'])*100
+test_set_precision_no=float(dtree_classification_report_test.loc[dtree_classification_report_test.index=='0']['precision'])*100
+test_set_recall_yes=float(dtree_classification_report_test.loc[dtree_classification_report_test.index=='1']['recall'])*100
+test_set_recall_no=float(dtree_classification_report_test.loc[dtree_classification_report_test.index=='0']['recall'])*100
+
+# Create output dataframe
+out_dict={"DataTime":[d_time],
+          "Algorithm":[algorithm],
+          "Training_Set_Accuracy":[train_set_accuracy],
+          "Training_Set_F1_Score_Yes":[train_set_f1_yes],
+          "Training_Set_F1_Score_No":[train_set_f1_no],
+          "Training_Set_Precision_Yes":[train_set_precision_yes],
+          "Training_Set_Precision_No":[train_set_precision_no],
+          "Training_Set_Recall_Yes":[train_set_recall_yes],
+          "Training_Set_Recall_No":[train_set_recall_no],
+          "Cross_Validation_Accuracy":[cross_validation_accuracy],
+          "Validation_Set_Accuracy":[valid_set_accuracy],
+          "Validation_Set_F1_Score_Yes":[valid_set_f1_yes],
+          "Validation_Set_F1_Score_No":[valid_set_f1_no],
+          "Validation_Set_Precision_Yes":[valid_set_precision_yes],
+          "Validation_Set_Precision_No":[valid_set_precision_no],
+          "Validation_Set_Recall_Yes":[valid_set_recall_yes],
+          "Validation_Set_Recall_No":[valid_set_recall_no],
+          "Test_Set_Accuracy":[test_set_accuracy],
+          "Test_Set_F1_Score_Yes":[test_set_f1_yes],
+          "Test_Set_F1_Score_No":[test_set_f1_no],
+          "Test_Set_Precision_Yes":[test_set_precision_yes],
+          "Test_Set_Precision_No":[test_set_precision_no],
+          "Test_Set_Recall_Yes":[test_set_recall_yes],
+          "Test_Set_Recall_No":[test_set_recall_no]
+          }
+
+out_df=pd.DataFrame.from_dict(out_dict)
+
+out_df.to_csv("./output/Accuracy_Metrices.csv",index=False)
