@@ -1,0 +1,2 @@
+criterion,max_depth,min_samples_leaf,min_samples_split,random_state,splitter
+gini,6,2,25,0,best
