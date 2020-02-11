@@ -11,6 +11,7 @@ Created on Tue Dec 10 17:17:39 2019
 # 3. Calculate sets of highly correlated data
 # 4. Remove highly correlated columns from the passed data
 # 5. Extract all information in the datetime column of a dataframe
+# 6. Get list of unique values in a column
 
 
 
@@ -219,4 +220,19 @@ def date_time_info_extract (ds,datetime_col,prefix):
     ds=pd.concat([ds,date_info], axis=1)
         
     return ds
+#-----------------------------------------------------------------------------#
+    
+
+
+#-----------------Get count Unique values in a column-------------------------#
+# This observation will be halpful in getting idea for creating dummy values for 
+# a variable
+def get_cat_count(ds):
+    ret_df=pd.DataFrame(columns=['Header','Unique_Count'])
+    for i in range(len(ds.columns)):
+        curr_col=ds.columns[i]
+        temp=pd.DataFrame({"Header":curr_col,'Unique_Count':len(ds[curr_col].value_counts())}, index=[0])
+        ret_df=ret_df.append(temp)
+    ret_df=ret_df.sort_values(by=['Unique_Count'])
+    return ret_df
 #-----------------------------------------------------------------------------#
