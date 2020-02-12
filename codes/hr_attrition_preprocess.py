@@ -231,15 +231,15 @@ x_valid=pd.DataFrame(x_valid, columns=valid_cols)
 # 4. tweek the cost function to make misclassification of minority instances 
 #    more important than misclassification of majority instances
 
-from imblearn.over_sampling import SMOTE
-smt=SMOTE()
-x_train,y_train = smt.fit_sample(x_train,y_train)
+#from imblearn.over_sampling import SMOTE
+#smt=SMOTE()
+#x_train,y_train = smt.fit_sample(x_train,y_train)
 
-# Check Data imbalance after oversampling
-pd.value_counts(y_train).plot.bar()
-plt.title('Attrition Distribution')
-plt.xlabel('Employee Exit (0-N, 1-Y)')
-plt.ylabel('Frequency')
+## Check Data imbalance after oversampling
+#pd.value_counts(y_train).plot.bar()
+#plt.title('Attrition Distribution')
+#plt.xlabel('Employee Exit (0-N, 1-Y)')
+#plt.ylabel('Frequency')
 
 
 # Create a dictionary for consisting of training and validation set
