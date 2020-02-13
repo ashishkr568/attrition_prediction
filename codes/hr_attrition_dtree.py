@@ -12,6 +12,7 @@ import sys
 import os
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 #import feather
 #import pickle
 #from sklearn.preprocessing import LabelEncoder
@@ -25,6 +26,8 @@ from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_sco
 from sklearn.metrics import make_scorer
 from sklearn.tree import DecisionTreeClassifier
 import datetime
+
+np.random.seed(42)
 
 # Import custom functions
 sys.path.insert(0, './functions/')
@@ -55,6 +58,34 @@ y_train=model_dict['y_train']
 x_valid=model_dict['x_valid']
 y_valid=model_dict['y_valid']
 
+
+# As there is huge class imblalance, lets try to deal it using SMOTE
+# SMOTE - Synthetic Minority Over Sampling Techniques.
+# There are following other ways as well to deal with severe class imbalance
+# 1. Synthesis of new minority class instance
+# 2. Over sampling of minority class
+# 3. Under Sampling of majority class
+# 4. tweek the cost function to make misclassification of minority instances 
+#    more important than misclassification of majority instances
+
+## Check Data imbalance before oversampling
+pd.value_counts(y_train).plot.bar()
+plt.title('Attrition Distribution- Before Oversampling')
+plt.xlabel('Employee Exit (0-N, 1-Y)')
+plt.ylabel('Frequency')
+plt.savefig(out_data_loc+'/'+"Attrition_Distribution- Before Oversampling.jpeg",bbox='tight')
+
+
+from imblearn.over_sampling import SMOTE
+smt=SMOTE()
+x_train,y_train = smt.fit_sample(x_train,y_train)
+
+# Check Data imbalance after oversampling
+pd.value_counts(y_train).plot.bar()
+plt.title('Attrition Distribution- After Oversampling')
+plt.xlabel('Employee Exit (0-N, 1-Y)')
+plt.ylabel('Frequency')
+plt.savefig(out_data_loc+'/'+"Attrition_Distribution- After Oversampling.jpeg",bbox='tight')
 
 
 #-------------------Hyperparameter tuning using GridSearchCV------------------#
@@ -308,7 +339,12 @@ roc_auc_curve_plot(y_true= y_test,
                    x_true= x_test, 
                    out_loc=out_data_loc)
 
-
+# Get feature importanance for decison tree
+dtree_feature_imp=pd.concat([pd.DataFrame(x_train.columns),pd.DataFrame(dtree_classifier.feature_importances_)],axis=1)
+dtree_feature_imp.columns=['Parameter_Name','Importance']
+dtree_feature_imp=dtree_feature_imp.sort_values(by=["Importance"], ascending=False)
+dtree_feature_imp=dtree_feature_imp.loc[dtree_feature_imp['Importance']>0,]
+dtree_feature_imp.to_csv(out_data_loc+'/Dtree_feature_imp.csv', index=False)
 
 
 
@@ -374,4 +410,7 @@ out_dict={"DataTime":[d_time],
 
 out_df=pd.DataFrame.from_dict(out_dict)
 
-out_df.to_csv("./output/Accuracy_Metrices.csv",index=False)
+# Append the result in existing accuracy nmetrices sheet
+acc_met=pd.read_csv("./output/Accuracy_Metrices.csv")
+acc_met=pd.concat([acc_met,out_df],axis=0)
+acc_met.to_csv("./output/Accuracy_Metrices.csv",index=False)
