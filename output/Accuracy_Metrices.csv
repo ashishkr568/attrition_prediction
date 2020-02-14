@@ -1,3 +1,4 @@
 DataTime,Algorithm,Training_Set_Accuracy,Training_Set_F1_Score_Yes,Training_Set_F1_Score_No,Training_Set_Precision_Yes,Training_Set_Precision_No,Training_Set_Recall_Yes,Training_Set_Recall_No,Cross_Validation_Accuracy,Validation_Set_Accuracy,Validation_Set_F1_Score_Yes,Validation_Set_F1_Score_No,Validation_Set_Precision_Yes,Validation_Set_Precision_No,Validation_Set_Recall_Yes,Validation_Set_Recall_No,Test_Set_Accuracy,Test_Set_F1_Score_Yes,Test_Set_F1_Score_No,Test_Set_Precision_Yes,Test_Set_Precision_No,Test_Set_Recall_Yes,Test_Set_Recall_No
-02-12-2020 17:06,Decision_Tree,88.5,87.7,89.3,94.6,83.9,81.8,95.3,86.129,81.2,32.4,89.1,40,86.4,27.3,91.9,84.4,34.3,91.1,50,87.4,26.1,95.2
-02-12-2020 17:46,Random_Forest,100,100,100,100,100,100,100,95.45,83.5,0,91,0,83.5,0,100,87.8,35.7,93.2,100,87.3,21.7,100
+02-12-2020 17:06,Decision_Tree,88.5,87.7,89.3,94.6,83.9,81.8,95.3,86.12899999999999,81.2,32.4,89.1,40.0,86.4,27.3,91.9,84.4,34.3,91.1,50.0,87.4,26.1,95.2
+02-12-2020 17:46,Random_Forest,100.0,100.0,100.0,100.0,100.0,100.0,100.0,95.45,83.5,0.0,91.0,0.0,83.5,0.0,100.0,87.8,35.7,93.2,100.0,87.3,21.7,100.0
+02/14/20 18:02:38,xgBoost,99.9,99.9,99.9,100.0,99.8,99.8,100.0,93.497,85.7,38.7,91.9,66.7,87.1,27.3,97.3,88.4,51.4,93.4,75.0,89.60000000000001,39.1,97.6
