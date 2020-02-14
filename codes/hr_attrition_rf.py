@@ -87,7 +87,8 @@ plt.savefig(out_data_loc+'/'+"Attrition_Distribution- After Oversampling.jpeg",b
 #-------------------Hyperparameter tuning using GridSearchCV------------------#
 # Create parameters for gridsearchcv
 grid_param_rf={'n_estimators':[10,20,40,80,160,320,500,1000],
-               'min_samples_leaf':[1,3,5,10,25],
+               'max_depth':[4,5,6,8,9,10],
+               'min_samples_leaf':[10,20,30,40,50,60],
                'max_features':[1,0.5,0.4,0.7],
                'bootstrap':[True,False]}
 
@@ -131,10 +132,11 @@ grid_cv_params_rf=pd.read_csv(out_data_loc+"/"+"RF_Grid_serch_Params.csv")
 
 # Build a random forest Regressor
 rf_classifier= RandomForestClassifier(n_estimators = grid_cv_params_rf.n_estimators[0],
+                                      max_depth= grid_cv_params_rf.max_depth[0],
                                       min_samples_leaf = grid_cv_params_rf.min_samples_leaf[0],
                                       max_features = grid_cv_params_rf.max_features[0],
                                       bootstrap = grid_cv_params_rf.bootstrap[0],
-                                      n_jobs=4)
+                                      n_jobs=-1)
 
 # Get Cross validation accuracy on the training data
 scores = cross_val_score(rf_classifier,x_train,y_train, cv=10)
