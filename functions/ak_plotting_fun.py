@@ -53,13 +53,13 @@ def plt_numeric_categorical_cols(ds, out_loc):
     
     
     # Plot all categorical parameters in a single plot for a birds eye visualization
-    nrow=3
+    nrow=6
     ncol=3
     # make a list of all dataframes 
     df_list = list(categorical_ds.columns)
     #fig= plt.figure(40,30)
     #axes = fig.add_subplots(nrow, ncol)
-    fig, axes = plt.subplots(nrow, ncol,figsize=(15,20))
+    fig, axes = plt.subplots(nrow, ncol,figsize=(20,40))
     # plot counter
     count=0
     for r in range(nrow):
@@ -69,7 +69,7 @@ def plt_numeric_categorical_cols(ds, out_loc):
                 plt.text("Test",ax=axes[r,c])
                 count=count+1
             else:
-                categorical_ds.iloc[:,count].value_counts().plot.bar(rot=20,
+                categorical_ds.iloc[:,count].value_counts().sort_index().plot.bar(rot=20,
                                                                        ax=axes[r,c],
                                                                        title=categorical_ds.iloc[:,count].name,
                                                                        fontsize=10)
