@@ -19,19 +19,21 @@ import pickle
 import joblib
 #from sklearn.ensemble import RandomForestClassifier
 # Import accuarcy metrices
-from sklearn.metrics import confusion_matrix
+#from sklearn.metrics import confusion_matrix
 from xgboost.sklearn import XGBClassifier
 #from sklearn.metrics import recall_score, accuracy_score, f1_score
 from sklearn.metrics import classification_report
 #from sklearn.metrics import roc_auc_score, roc_curve, auc
 from sklearn.model_selection import GridSearchCV, cross_val_score
-from sklearn.metrics import make_scorer
+#from sklearn.metrics import make_scorer
 
 # Import custom functions
 sys.path.insert(0, './functions/')
 #from ak_generic_fun import dup_col_rows, get_null, high_corr_sets, rem_high_corr
 #from ak_plotting_fun import plt_numeric_categorical_cols, plt_corr_mat_heatmap
 from ak_plotting_fun import roc_auc_curve_plot, label_and_plot_confusion_matrix
+
+np.random.seed(42)
 
 model_name='xgBoost'
 
@@ -269,7 +271,7 @@ y_test_pred_xgb= attrition_xgbclassifier_model.predict(x_test)
 xgb_confusion_matrix_test=label_and_plot_confusion_matrix(y_true=y_test,
                                                        y_pred=y_test_pred_xgb, 
                                                        test_type="Test",
-                                                       model_name='D-Tree',
+                                                       model_name='xgBoost',
                                                        out_loc=out_data_loc)
 
 
