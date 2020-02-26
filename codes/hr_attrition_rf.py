@@ -20,18 +20,20 @@ import pickle
 import joblib
 from sklearn.ensemble import RandomForestClassifier
 # Import accuarcy metrices
-from sklearn.metrics import confusion_matrix
+#from sklearn.metrics import confusion_matrix
 #from sklearn.metrics import recall_score, accuracy_score, f1_score
 from sklearn.metrics import classification_report
 #from sklearn.metrics import roc_auc_score, roc_curve, auc
 from sklearn.model_selection import GridSearchCV, cross_val_score
-from sklearn.metrics import make_scorer
+#from sklearn.metrics import make_scorer
 
 # Import custom functions
 sys.path.insert(0, './functions/')
 #from ak_generic_fun import dup_col_rows, get_null, high_corr_sets, rem_high_corr
 #from ak_plotting_fun import plt_numeric_categorical_cols, plt_corr_mat_heatmap
 from ak_plotting_fun import roc_auc_curve_plot, label_and_plot_confusion_matrix
+
+np.random.seed(42)
 
 model_name='Random_Forest'
 
@@ -84,46 +86,46 @@ plt.ylabel('Frequency')
 plt.savefig(out_data_loc+'/'+"Attrition_Distribution- After Oversampling.jpeg",bbox='tight')
 
 
-#-------------------Hyperparameter tuning using GridSearchCV------------------#
-# Create parameters for gridsearchcv
-grid_param_rf={'n_estimators':[10,20,40,80,160,320,500,1000],
-               'max_depth':[4,5,6,8,9,10],
-               'min_samples_leaf':[10,20,30,40,50,60],
-               'max_features':[1,0.5,0.4,0.7],
-               'bootstrap':[True,False]}
-
-
-## Create a custom scoring function. 
-## We will be using recall for the positive class.
-#def custom_recall_fun(y,y_pred):
-#    confusion_mat_temp=confusion_matrix(y,y_pred, labels=[1,0]).T
-#    recall_positive=confusion_mat_temp[0,0]/(confusion_mat_temp[0,0]+confusion_mat_temp[1,0])
-#    return recall_positive
+##-------------------Hyperparameter tuning using GridSearchCV------------------#
+## Create parameters for gridsearchcv
+#grid_param_rf={'n_estimators':[10,20,40,80,160,320,500,1000],
+#               'max_depth':[4,6,8,10],
+#               'min_samples_leaf':[10,20,30,40,50,60],
+#               'max_features':[1,0.5,0.4,0.7],
+#               'bootstrap':[True,False]}
 #
-## Use make scorer from sklearn.metrices to create a scoring function
-#custom_scorer = make_scorer(score_func=custom_recall_fun, greater_is_better=True)
-
-
-# Build a dummy classifier
-rf_classifier=RandomForestClassifier()
-
-# Perform gridsearch for the above grid parameters
-# We need to provide the desired scoring criteria and cv
-rf_grid_search=GridSearchCV(estimator=rf_classifier,
-                            param_grid=grid_param_rf,
-                            scoring='precision',
-                            cv=10,
-                            n_jobs=-1)
-
-# Fit the above defined model with the training set, to get the best parameters 
-rf_grid_search.fit(x_train,y_train)
-
-# Get the best parameters and save it in a file
-grid_cv_params_rf=rf_grid_search.best_params_
-grid_cv_params_rf= pd.DataFrame(grid_cv_params_rf, index=[1,])
-grid_cv_params_rf.to_csv(out_data_loc+'/'+"RF_Grid_serch_Params.csv", index=False)
-
-#-----------------------------------------------------------------------------#
+#
+### Create a custom scoring function. 
+### We will be using recall for the positive class.
+##def custom_recall_fun(y,y_pred):
+##    confusion_mat_temp=confusion_matrix(y,y_pred, labels=[1,0]).T
+##    recall_positive=confusion_mat_temp[0,0]/(confusion_mat_temp[0,0]+confusion_mat_temp[1,0])
+##    return recall_positive
+##
+### Use make scorer from sklearn.metrices to create a scoring function
+##custom_scorer = make_scorer(score_func=custom_recall_fun, greater_is_better=True)
+#
+#
+## Build a dummy classifier
+#rf_classifier=RandomForestClassifier()
+#
+## Perform gridsearch for the above grid parameters
+## We need to provide the desired scoring criteria and cv
+#rf_grid_search=GridSearchCV(estimator=rf_classifier,
+#                            param_grid=grid_param_rf,
+#                            scoring='precision',
+#                            cv=10,
+#                            n_jobs=-1)
+#
+## Fit the above defined model with the training set, to get the best parameters 
+#rf_grid_search.fit(x_train,y_train)
+#
+## Get the best parameters and save it in a file
+#grid_cv_params_rf=rf_grid_search.best_params_
+#grid_cv_params_rf= pd.DataFrame(grid_cv_params_rf, index=[1,])
+#grid_cv_params_rf.to_csv(out_data_loc+'/'+"RF_Grid_serch_Params.csv", index=False)
+#
+##-----------------------------------------------------------------------------#
 
 
 
@@ -277,7 +279,7 @@ y_test_pred_rf= attrition_rf_model.predict(x_test)
 rf_confusion_matrix_test=label_and_plot_confusion_matrix(y_true=y_test,
                                                        y_pred=y_test_pred_rf, 
                                                        test_type="Test",
-                                                       model_name='D-Tree',
+                                                       model_name='RF',
                                                        out_loc=out_data_loc)
 
 
@@ -300,7 +302,7 @@ roc_auc_curve_plot(y_true= y_test,
                    y_pred= y_test_pred_rf,
                    classifier=attrition_rf_model,
                    test_type='Test',
-                   model_name='D-Tree',
+                   model_name='RF',
                    x_true= x_test, 
                    out_loc=out_data_loc)
 
