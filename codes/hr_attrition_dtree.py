@@ -18,12 +18,12 @@ import matplotlib.pyplot as plt
 #from sklearn.preprocessing import LabelEncoder
 import joblib
 # Import accuarcy metrices
-from sklearn.metrics import confusion_matrix
+#from sklearn.metrics import confusion_matrix
 #from sklearn.metrics import recall_score, accuracy_score, f1_score
 from sklearn.metrics import classification_report
 #from sklearn.metrics import roc_auc_score, roc_curve, auc
 from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score
-from sklearn.metrics import make_scorer
+#from sklearn.metrics import make_scorer
 from sklearn.tree import DecisionTreeClassifier
 import datetime
 
@@ -89,48 +89,48 @@ plt.savefig(out_data_loc+'/'+"Attrition_Distribution- After Oversampling.jpeg",b
 
 
 #-------------------Hyperparameter tuning using GridSearchCV------------------#
-# Create parameters for gridsearchcv
-grid_param_dtree={'criterion':['gini','entropy'],
-                  'splitter':['best'],
-                  'max_depth':[6,10,None],
-                  'min_samples_split':[2,5,10,25],
-                  'min_samples_leaf':[2,4,6],
-                  'random_state':[0]}
-
-
-## Create a custom scoring function. 
-## We will be using recall for the positive class.
-#def custom_recall_fun(y,y_pred):
-#    confusion_mat_temp=confusion_matrix(y,y_pred, labels=[1,0]).T
-#    recall_positive=confusion_mat_temp[0,0]/(confusion_mat_temp[0,0]+confusion_mat_temp[1,0])
-#    return recall_positive
+## Create parameters for gridsearchcv
+#grid_param_dtree={'criterion':['gini','entropy'],
+#                  'splitter':['best'],
+#                  'max_depth':[6,10,None],
+#                  'min_samples_split':[2,5,10,25],
+#                  'min_samples_leaf':[2,4,6],
+#                  'random_state':[0]}
 #
-## Use make scorer from sklearn.metrices to create a scoring function
-#custom_scorer = make_scorer(score_func=custom_recall_fun, greater_is_better=True)
-
-
-# Build a dummy classifier
-dtree_classifier=DecisionTreeClassifier()
-
-# Perform gridsearch for the above grid parameters
-# We need to provide the desired scoring criteria and cv
-dtree_grid_search=GridSearchCV(estimator=dtree_classifier,
-                            param_grid=grid_param_dtree,
-                            scoring='precision',
-                            return_train_score=True,
-                            cv=StratifiedKFold(n_splits=10))
-
-# Fit the above defined model with the training set, to get the best parameters 
-dtree_grid_search.fit(x_train,y_train)
-
-# Save gridsearch results for future reference
-cv_results=pd.DataFrame.from_dict(dtree_grid_search.cv_results_,orient='columns')
-
-
-# Get the best parameters and save it in a file
-grid_cv_params_dtree=dtree_grid_search.best_params_
-grid_cv_params_dtree= pd.DataFrame(grid_cv_params_dtree, index=[1,])
-grid_cv_params_dtree.to_csv(out_data_loc+'/'+"D_Tree_Grid_serch_Params.csv", index=False)
+#
+### Create a custom scoring function. 
+### We will be using recall for the positive class.
+##def custom_recall_fun(y,y_pred):
+##    confusion_mat_temp=confusion_matrix(y,y_pred, labels=[1,0]).T
+##    recall_positive=confusion_mat_temp[0,0]/(confusion_mat_temp[0,0]+confusion_mat_temp[1,0])
+##    return recall_positive
+##
+### Use make scorer from sklearn.metrices to create a scoring function
+##custom_scorer = make_scorer(score_func=custom_recall_fun, greater_is_better=True)
+#
+#
+## Build a dummy classifier
+#dtree_classifier=DecisionTreeClassifier()
+#
+## Perform gridsearch for the above grid parameters
+## We need to provide the desired scoring criteria and cv
+#dtree_grid_search=GridSearchCV(estimator=dtree_classifier,
+#                            param_grid=grid_param_dtree,
+#                            scoring='precision',
+#                            return_train_score=True,
+#                            cv=StratifiedKFold(n_splits=10))
+#
+## Fit the above defined model with the training set, to get the best parameters 
+#dtree_grid_search.fit(x_train,y_train)
+#
+## Save gridsearch results for future reference
+#cv_results=pd.DataFrame.from_dict(dtree_grid_search.cv_results_,orient='columns')
+#
+#
+## Get the best parameters and save it in a file
+#grid_cv_params_dtree=dtree_grid_search.best_params_
+#grid_cv_params_dtree= pd.DataFrame(grid_cv_params_dtree, index=[1,])
+#grid_cv_params_dtree.to_csv(out_data_loc+'/'+"D_Tree_Grid_serch_Params.csv", index=False)
 
 #-----------------------------------------------------------------------------#
 
