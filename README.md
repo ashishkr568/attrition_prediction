@@ -7,6 +7,13 @@ Link:- https://www.kaggle.com/pavansubhasht/ibm-hr-analytics-attrition-dataset
 This project can act as a guide to someone who is new to the field of data science and wants to get a brief idea about data preprocessing steps and basic model development.
 However this is not the exhaustive list of task performed for data pre-processing. The data preprocessing steps largly depends on the type of data you are working on.
 
+## Algorithms Used
+1. Decision Tree
+2. Random Forest
+3. XG Boost
+4. Support Vector Machines (SVM)
+5. Neural Network
+
 
 ## Getting Started
 In order to use this project the user needs to clone it and then they need to create a project using any of the python IDE (preferably Spyder).
